@@ -10,7 +10,8 @@
     "test": "vitest run",
     "lint": "oxlint",
     "sample-street": "tsx scripts/makeSampleStreet.ts",
-    "export-validation": "tsx scripts/exportEngineCases.ts"
+    "export-validation": "tsx scripts/exportEngineCases.ts",
+    "validate": "python validation/validate.py --refresh"
   },
   "dependencies": {
     "leaflet": "1.9.4",

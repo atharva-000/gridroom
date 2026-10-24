@@ -1,4 +1,4 @@
-// dumps engine results for validation/validate.ipynb (npm run export-validation)
+// dumps engine results for validation/validate.py (npm run export-validation)
 import { writeFileSync } from 'node:fs';
 import { simulate } from '../src/engine/realEngine';
 import { type SimInput, emptyFlags } from '../src/engine/contract';

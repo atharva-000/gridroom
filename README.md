@@ -30,7 +30,12 @@ npm run build    # production build
 
 ## Validation
 
-We checked the solver against [pandapower](https://www.pandapower.org/) on the same 25-house street (`validation/validate.ipynb`). The largest difference across three cases was about 6×10⁻¹¹ pu.
+We checked the solver against [pandapower](https://www.pandapower.org/) on the same 25-house street (`validation/validate.py`). The largest difference across three cases was about 6×10⁻¹¹ pu.
+
+```
+pip install -r validation/requirements.txt
+python validation/validate.py --refresh
+```
 
 ![Engine vs pandapower](public/validation_chart.png)
 
@@ -42,7 +47,7 @@ src/geo/      street model for My Street (geometry, OSM stitching, analysis)
 src/levels/   level definitions
 src/ui/       screens and components
 scripts/      sample-street builder, validation export
-validation/   pandapower notebook and chart
+validation/   pandapower check (Python) and chart
 ```
 
 ## Limitations
