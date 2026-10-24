@@ -1,4 +1,4 @@
-import { SimInput, SimOutput, SimulateFn, HostingCapacityFn, V_MIN, V_MAX, BASE_KVA, SOURCE_V, segmentImpedances } from './contract';
+import { type SimInput, type SimOutput, type SimulateFn, type HostingCapacityFn, V_MIN, V_MAX, BASE_KVA, SOURCE_V, segmentImpedances } from './contract';
 const LOAD = { spring: [0.8, 0.25], heatwave: [3.5, 1.4], evening: [2.5, 0.6] } as const;
 const SOLAR = { spring: 6.0, heatwave: 4.5, evening: 0 } as const;
 const EV_KW = 7.2;
