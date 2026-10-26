@@ -30,7 +30,7 @@ function turnAngle(a: LatLng, b: LatLng, c: LatLng): number {
 export function stitchStreet(geo: GeocodeResult, resp: OverpassResponse): StreetLine {
   const ways = resp.elements.filter((e): e is OsmWay => e.type === 'way' && Array.isArray(e.geometry) && e.geometry.length >= 2);
   const name = normName(geo.road);
-  const candidates = ways.filter(w => normName(w.tags?.name) === name);
+  const candidates = ways.filter(w => !!w.tags?.highway && normName(w.tags?.name) === name);
   if (candidates.length === 0) throw new Error("Couldn't find that street in the map data.");
 
   const here = { lat: geo.lat, lon: geo.lon };
