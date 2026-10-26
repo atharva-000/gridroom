@@ -32,3 +32,57 @@ p { line-height: 1.55; }
 .level-card span { color: #51616a; line-height: 1.5; }
 .level-card small { margin-top: auto; color: #0f766e; font-weight: bold; }
 @media (max-width: 480px) { .page { padding: 14px 16px; } .panel { padding: 14px; } }
+.brand { font-size: clamp(2.2rem, 6vw, 3.4rem); margin-bottom: 6px; color: #0f4f4a; }
+.tagline { font-size: 1.15rem; color: #334247; max-width: 640px; }
+.small { font-size: 0.88rem; }
+.footer-note { margin-top: 28px; max-width: 760px; }
+.home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 15px; }
+.home-card { text-align: left; padding: 20px; min-height: 130px; display: flex; flex-direction: column; gap: 10px; }
+.home-card strong { font-size: 1.1rem; }
+.home-card span { color: #51616a; line-height: 1.5; }
+.home-card-main { background: #0f766e; color: #fff; border-color: #0f766e; }
+.home-card-main span { color: #d8f1ec; }
+.home-card-main:hover { background: #0d665f; }
+.level-card:disabled { opacity: 0.55; cursor: not-allowed; }
+.stars { color: #b7791f; letter-spacing: 2px; margin-right: 6px; }
+.intro-card { max-width: 760px; }
+.intro-art { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto 14px; }
+.steps { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 18px 0 4px; counter-reset: step; }
+.steps li { counter-increment: step; padding: 6px 12px; border-radius: 999px; background: #e9eef0; color: #5b6b72; font-size: 0.9rem; }
+.steps li::before { content: counter(step) ". "; }
+.steps li.current { background: #0f766e; color: #fff; font-weight: 700; }
+.steps li.done { background: #d5ece7; color: #14594e; }
+.search-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.search-row input { flex: 1 1 260px; }
+input[type="text"], input[type="number"] { min-height: 44px; padding: 8px 12px; border: 1px solid #b7c8cb; border-radius: 9px; font: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.loading { font-weight: 700; color: #14594e; }
+.error-box { background: #fdecea; border: 1px solid #f3b8b1; border-radius: 10px; padding: 14px; margin: 12px 0; }
+.error-box p { margin-bottom: 10px; color: #8a1c12; }
+.alt-row { margin-top: 12px; }
+.manual-box { display: grid; gap: 12px; margin-top: 14px; padding: 14px; background: #f3f7f8; border-radius: 10px; }
+.manual-box label { display: grid; gap: 6px; max-width: 280px; }
+.segmented { display: inline-flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.segmented button.on { background: #0f766e; color: #fff; border-color: #0f766e; }
+.swatch.red { border-left: 6px solid #d93025; }
+.swatch.yellow { border-left: 6px solid #e8c31d; }
+.swatch.green { border-left: 6px solid #2fa84f; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+.dot.red { background: #d93025; } .dot.yellow { background: #e8c31d; } .dot.green { background: #2fa84f; }
+.utility-box { margin: 12px 0; }
+.explain { margin: 14px 0; }
+.explain summary { cursor: pointer; font-weight: 700; color: #0f766e; }
+.nav-row { margin-top: 16px; justify-content: space-between; }
+.warnings { color: #7a5b00; background: #fff7d6; border-radius: 8px; padding: 10px 10px 10px 28px; }
+.street-map-wrap { max-width: 100%; overflow-x: auto; border-radius: 12px; background: #f3f7f8; margin: 12px 0; }
+.street-map { width: 100%; height: auto; display: block; }
+.controls-grid { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+.slider { display: grid; gap: 4px; min-width: 220px; }
+.slider input { accent-color: #0f766e; }
+.status-line { margin: 12px 0 0; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 0 16px; }
+.cap-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.cap-table th, .cap-table td { text-align: left; padding: 6px 4px; border-bottom: 1px solid #e3e8ea; }
+.limits { padding-left: 20px; color: #4a5a61; }
+.chart-img { width: 100%; height: auto; border-radius: 8px; border: 1px solid #e1e5e9; }
+.map-note { margin: 0; padding: 8px 12px 0; }
