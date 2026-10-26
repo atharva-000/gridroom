@@ -1,16 +1,19 @@
 import type { GeocodeResult, OverpassResponse } from '../types';
+import { estimateStreetArea } from './estimate';
+
+export type StreetArea = OverpassResponse & { estimated?: boolean };
 
 // One request per street: the nearby roads plus the buildings along the named street.
 // Servers are tried in order; a busy one (429/504) is skipped rather than retried in a loop.
-const ENDPOINTS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+const ENDPOINTS: [string, number][] = [
+  ['https://overpass-api.de/api/interpreter', 15_000],
+  ['https://maps.mail.ru/osm/tools/overpass/api/interpreter', 8_000],
+  ['https://overpass.private.coffee/api/interpreter', 8_000],
 ];
 const ROADS = 'primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified|residential|living_street';
 const CACHE_KEY = 'gridroom.overpass.v1';
 const cache = new Map<string, OverpassResponse>();
-let inFlight: Promise<OverpassResponse> | null = null;
+let inFlight: Promise<StreetArea> | null = null;
 
 const quote = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
@@ -42,14 +45,14 @@ function toSession(key: string, data: OverpassResponse) {
   }
 }
 
-async function run(query: string): Promise<OverpassResponse> {
-  for (const endpoint of ENDPOINTS) {
+async function run(query: string, geo: GeocodeResult): Promise<StreetArea> {
+  for (const [endpoint, ms] of ENDPOINTS) {
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'data=' + encodeURIComponent(query),
-        signal: AbortSignal.timeout(25_000),
+        signal: AbortSignal.timeout(ms),
       });
       if (!res.ok) continue;
       const data = (await res.json()) as OverpassResponse;
@@ -58,18 +61,25 @@ async function run(query: string): Promise<OverpassResponse> {
       // timeout or network error: next server
     }
   }
-  throw new Error('The map servers are busy right now. Try again in a minute, or use the sample street.');
+  // every map server failed: fall back to the street's real shape with estimated lots
+  try {
+    return { ...(await estimateStreetArea(geo)), estimated: true };
+  } catch {
+    throw new Error('The map servers are busy right now. Try again in a minute, or use the sample street.');
+  }
 }
 
-export async function fetchStreetArea(geo: GeocodeResult): Promise<OverpassResponse> {
+export async function fetchStreetArea(geo: GeocodeResult): Promise<StreetArea> {
   const query = areaQuery(geo);
   const hit = cache.get(query) ?? fromSession(query);
   if (hit) return hit;
   if (inFlight) return inFlight; // never two map requests at once
-  inFlight = run(query)
+  inFlight = run(query, geo)
     .then(data => {
-      cache.set(query, data);
-      toSession(query, data);
+      if (!data.estimated) {
+        cache.set(query, data);
+        toSession(query, data);
+      }
       return data;
     })
     .finally(() => {

@@ -61,10 +61,17 @@ export function MyStreet() {
     try {
       setLoading('Finding the address…');
       const geo = await geocodeAddress(address);
-      setLoading(`Mapping ${geo.road} and its houses…`);
+      setLoading(`Mapping ${geo.road} and its houses. This can take up to 30 seconds…`);
       const area = await fetchStreetArea(geo);
       const line = stitchStreet(geo, area);
-      load(buildStreetModel(geo, line, area));
+      const built = buildStreetModel(geo, line, area);
+      if (area.estimated) {
+        built.warnings = [
+          'The building map was busy, so houses are placed every 30 m on both sides of the real street. Use "Tap: not a house" to remove any that aren\'t there.',
+          ...built.warnings.filter(w => !w.startsWith('Home not found')),
+        ];
+      }
+      load(built);
     } catch (e) {
       setError((e as Error).message);
     } finally {

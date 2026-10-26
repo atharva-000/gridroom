@@ -7,6 +7,7 @@ export interface GeocodeResult {
   road: string;
   houseNumber?: string;
   townLabel: string;
+  town?: string;
 }
 
 export interface OsmWay {

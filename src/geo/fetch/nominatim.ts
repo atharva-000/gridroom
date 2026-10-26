@@ -22,15 +22,20 @@ function writeCache() {
   }
 }
 
+// Nominatim allows one request per second; every call in the app goes through this.
+export async function politeWait() {
+  const wait = 1100 - (Date.now() - lastRequest);
+  if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  lastRequest = Date.now();
+}
+
 export async function geocodeAddress(address: string): Promise<GeocodeResult> {
   const query = address.trim().replace(/\s+/g, ' ');
   const key = query.toLowerCase();
   const cached = cache.get(key);
   if (cached) return cached;
 
-  const wait = 1100 - (Date.now() - lastRequest);
-  if (wait > 0) await new Promise(r => setTimeout(r, wait));
-  lastRequest = Date.now();
+  await politeWait();
 
   const url =
     'https://nominatim.openstreetmap.org/search?' +
@@ -66,6 +71,7 @@ export async function geocodeAddress(address: string): Promise<GeocodeResult> {
     road: a.road,
     houseNumber: a.house_number,
     townLabel: [town, 'NJ'].filter(Boolean).join(', '),
+    town,
   };
   cache.set(key, result);
   writeCache();
