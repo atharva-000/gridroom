@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { StreetModel, UtilityInput } from '../geo/types';
 import { analyzeStreet, buildStreetModel, manualStreetModel, stitchStreet } from '../geo';
 import { geocodeAddress } from '../geo/fetch/nominatim';
-import { fetchBuildings, fetchStreetWays } from '../geo/fetch/overpass';
+import { fetchStreetArea } from '../geo/fetch/overpass';
 import { V_MAX, V_MIN } from '../engine/contract';
 import { JCPL_MAP_URL, LIMITATIONS, MAPS_EXPLAINED, MEANING, PRIVACY, PSEG_MAP_URL } from '../content/text';
 import { StreetMap } from './StreetMap';
@@ -25,7 +25,7 @@ function spreadNeighbors(model: StreetModel, count: number, current: boolean[]):
   return next;
 }
 
-export function MyStreet({ onBack }: { onBack: () => void }) {
+export function MyStreet() {
   const [step, setStep] = useState<Step>('find');
   const [model, setModel] = useState<StreetModel | null>(null);
   const [feedEnd, setFeedEnd] = useState<'A' | 'B'>('A');
@@ -61,10 +61,10 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
     try {
       setLoading('Finding the address…');
       const geo = await geocodeAddress(address);
-      setLoading('Mapping the street…');
-      const line = stitchStreet(geo, await fetchStreetWays(geo.lat, geo.lon));
-      setLoading('Finding houses…');
-      load(buildStreetModel(geo, line, await fetchBuildings(line.wayIds)));
+      setLoading(`Mapping ${geo.road} and its houses…`);
+      const area = await fetchStreetArea(geo);
+      const line = stitchStreet(geo, area);
+      load(buildStreetModel(geo, line, area));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -125,16 +125,15 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
 
   return (
     <main className="page">
-      <header className="game-header">
-        <button onClick={onBack}>← Home</button>
+      <div className="title-row">
         <div>
           <h1>Check a street</h1>
-          <p className="muted">{model ? `${model.streetName}${model.townLabel ? `, ${model.townLabel}` : ''}` : 'Model a real street at a sunny spring noon.'}</p>
+          <p className="lede">{model ? `${model.streetName}${model.townLabel ? `, ${model.townLabel}` : ''}` : 'Model a real New Jersey street at a sunny spring noon.'}</p>
         </div>
-      </header>
+      </div>
 
       <ol className="steps">
-        {STEPS.map((s, i) => <li key={s.id} className={i === stepIndex ? 'current' : i < stepIndex ? 'done' : ''}>{s.label}</li>)}
+        {STEPS.map((s, i) => <li key={s.id} className={i === stepIndex ? 'current' : i < stepIndex ? 'done' : ''} aria-current={i === stepIndex ? 'step' : undefined}><span className="step-num num">{i + 1}</span>{s.label}</li>)}
       </ol>
 
       {step === 'find' && (
@@ -183,7 +182,7 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
       {step === 'check' && model && (
         <section className="panel">
           <h2>Check the map</h2>
-          <p>Found <strong>{model.houses.length}</strong> houses on <strong>{model.streetName}</strong>. ⚡ marks where power comes into the street.</p>
+          <p>Found <strong>{model.houses.length}</strong> houses on <strong>{model.streetName}</strong>. The dark marker shows where power comes into the street.</p>
           {model.warnings.length > 0 && <ul className="warnings">{model.warnings.map(w => <li key={w}>{w}</li>)}</ul>}
           <div className="segmented" role="group" aria-label="What tapping a house does">
             <button className={editMode === 'home' ? 'on' : ''} onClick={() => setEditMode('home')}>Tap: this is the home</button>
@@ -200,7 +199,7 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
           </div>
           <div className="button-row nav-row">
             <button onClick={() => setStep('find')}>Back</button>
-            <button className="primary" onClick={() => setStep('utility')}>Looks right → Next</button>
+            <button className="primary" onClick={() => setStep('utility')}>Looks right, next</button>
           </div>
         </section>
       )}
@@ -232,7 +231,7 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
           {company === 'jcpl' && (
             <div className="utility-box">
               <p>Open <a href={JCPL_MAP_URL} target="_blank" rel="noreferrer">JCP&amp;L's Solar Accommodation Map</a>, find the dot nearest the home, and enter the number it shows in kW (if it shows MW, multiply by 1000):</p>
-              <input type="number" min={0} placeholder="kW" value={jcplKw} onChange={e => {
+              <input type="number" min={0} placeholder="kW" aria-label="Capacity in kW" value={jcplKw} onChange={e => {
                 setJcplKw(e.target.value);
                 const kw = Number(e.target.value);
                 chooseUtility(e.target.value && kw > 0 ? { kind: 'jcpl', kw } : { kind: 'unknown' });
@@ -246,7 +245,7 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
           </details>
           <div className="button-row nav-row">
             <button onClick={() => setStep('check')}>Back</button>
-            <button className="primary" onClick={() => setStep('results')}>Show the street →</button>
+            <button className="primary" onClick={() => setStep('results')}>Show the street</button>
           </div>
         </section>
       )}
@@ -276,10 +275,10 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
               <label className="toggle"><input type="checkbox" checked={smart} onChange={e => setSmart(e.target.checked)} /> Smart inverters</label>
               <label className="toggle"><input type="checkbox" checked={showValues} onChange={e => setShowValues(e.target.checked)} /> Engineer view</label>
             </div>
-            <p className="status-line"><strong>
+            <p className={`status-line ${high || low ? 'bad' : 'good'}`}><strong>
               {!analysis ? 'Could not model this street.'
-                : high === 0 && low === 0 ? 'All houses in the safe range ✓'
-                  : `${high ? `${high} house(s) too high ▲` : ''}${high && low ? ' · ' : ''}${low ? `${low} house(s) too low ▼` : ''}`}
+                : high === 0 && low === 0 ? 'All houses in the safe range'
+                  : `${high ? `${high} ${high === 1 ? 'house' : 'houses'} too high` : ''}${high && low ? ' · ' : ''}${low ? `${low} ${low === 1 ? 'house' : 'houses'} too low` : ''}`}
             </strong></p>
             {showValues && analysis && (
               <>
@@ -321,17 +320,17 @@ export function MyStreet({ onBack }: { onBack: () => void }) {
                     <p>House #{analysis.yourHome.positionFromFeed} from where power comes in (about {analysis.yourHome.distanceFromFeedM} m).</p>
                     <p>
                       {analysis.yourHome.withYours.ok
-                        ? '✓ With the neighbors marked, solar on this home keeps every house in the safe range.'
-                        : `▲ Solar on this home would push the street to ${analysis.yourHome.withYours.maxV.toFixed(3)} pu.`}
+                        ? 'With the neighbors marked, solar on this home keeps every house in the safe range.'
+                        : `Solar on this home would push the street to ${analysis.yourHome.withYours.maxV.toFixed(3)} pu.`}
                     </p>
                     <p>
-                      With smart inverters: {analysis.yourHome.withYoursSmart.ok ? '✓ fits' : `▲ still ${analysis.yourHome.withYoursSmart.maxV.toFixed(3)} pu`}
+                      With smart inverters: {analysis.yourHome.withYoursSmart.ok ? 'fits' : `still ${analysis.yourHome.withYoursSmart.maxV.toFixed(3)} pu`}
                     </p>
                   </>
                 ) : (
                   <p>{MEANING.noHome}</p>
                 )}
-                <p className="muted">{meaning}</p>
+                {analysis.yourHome && <p className="muted">{meaning}</p>}
               </section>
             </div>
           )}

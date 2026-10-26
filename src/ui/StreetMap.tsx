@@ -81,6 +81,8 @@ export function StreetMap({ model, feedEnd, voltages, solar, onHouseClick, showV
   const endA = line[0];
   const endB = line[line.length - 1];
   const feed = feedEnd === 'A' ? endA : endB;
+  const other = feedEnd === 'A' ? endB : endA;
+  const lx = feed.x + (other.x < feed.x ? -34 : 34); // keep the label inside the map
   const strip = width !== W || height !== 380;
 
   return (
@@ -101,7 +103,10 @@ export function StreetMap({ model, feedEnd, voltages, solar, onHouseClick, showV
             <text x={p.x} y={p.y + 5} textAnchor="middle" fontSize="14" fontWeight="bold" fill="#263238">{label}</text>
           </g>
         ))}
-        <text x={feed.x} y={feed.y - 20} textAnchor="middle" fontSize="18">⚡</text>
+        <g aria-hidden="true">
+          <rect x={lx - 26} y={feed.y - 34} width="52" height="18" rx="4" fill="#131416" />
+          <text x={lx} y={feed.y - 21} textAnchor="middle" fontSize="10" fontWeight="600" fill="#fff">power in</text>
+        </g>
 
         {model.houses.map((house, i) => {
           const p = houses[i];

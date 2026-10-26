@@ -1,12 +1,15 @@
 import { SOURCES } from '../content/text';
 
-export function HowWeBuilt({ onBack }: { onBack: () => void }) {
+export function HowWeBuilt() {
   return (
     <main className="page">
-      <header className="game-header">
-        <button onClick={onBack}>← Home</button>
-        <div><h1>How we built it</h1></div>
-      </header>
+      <div className="title-row">
+        <div>
+          <h1>How we built it</h1>
+          <p className="lede">The physics behind the game, how we checked it, and where the street data comes from.</p>
+        </div>
+      </div>
+      <div className="prose-grid">
 
       <section className="panel">
         <h2>The engine</h2>
@@ -43,6 +46,7 @@ export function HowWeBuilt({ onBack }: { onBack: () => void }) {
         <ul>{SOURCES.map(s => <li key={s.url}><a href={s.url} target="_blank" rel="noreferrer">{s.label}</a></li>)}</ul>
         <p className="muted small">Map data © OpenStreetMap contributors.</p>
       </section>
+      </div>
     </main>
   );
 }
