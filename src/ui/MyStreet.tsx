@@ -61,8 +61,8 @@ export function MyStreet() {
     try {
       setLoading('Finding the address…');
       const geo = await geocodeAddress(address);
-      setLoading(`Mapping ${geo.road} and its houses. This can take up to 30 seconds…`);
-      const area = await fetchStreetArea(geo);
+      setLoading(`Mapping ${geo.road} and its houses…`);
+      const area = await fetchStreetArea(geo, setLoading);
       const line = stitchStreet(geo, area);
       const built = buildStreetModel(geo, line, area);
       if (area.estimated) {
